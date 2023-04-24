@@ -1,1 +1,1 @@
-simple shell project
+simple shell project by prince candy and Behaliu Kasaye
