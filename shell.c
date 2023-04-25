@@ -25,7 +25,7 @@ void prompt(char **argv, char **env)
 	int c, pStatus;	/*c: character counter, pStatus: child process status*/
 	size_t n = 0;	/*n: address of character*/
 	ssize_t num_char;	/*num_char: number of character entered and read*/
-	char *arg[] = {NULL, NULL};	/*arg: argument value passed*/
+	char *arg[50];	/*arg: argument value passed*/
 	pid_t cldId;	/*cldId: child process*/
 
 	while (1)
@@ -45,7 +45,10 @@ void prompt(char **argv, char **env)
 				command[c] = 0;
 			c++;
 		}
-		arg[0] = command;
+		c = 0;
+		arg[c] = strtok(command, " ");
+		while (arg[c])
+			arg[++c] = strtok(NULL, " ");
 		cldId = fork();	/*create child process, return -1 if it is failed*/
 		if (cldId < 0)
 		{
@@ -55,7 +58,7 @@ void prompt(char **argv, char **env)
 		else if (cldId == 0)
 		{
 			if (execve(arg[0], arg, env) < 0)	/*execute the command*/
-				printf("%s No such file or directory\n", argv[0]);
+				printf("%s: No such file or directory\n", argv[0]);
 		}
 		else
 			wait(&pStatus);	/*wait the child process*/
