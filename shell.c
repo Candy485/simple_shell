@@ -3,15 +3,37 @@
 /**
  * main - main method or the start of the program
  * @argc: command argument
- * @argv: command argument value
+ * @argv: argument vectort
  * @env: environment (valid command)
  * Return: 0
 */
-int main(int argc, char *argv[], char **env)
+int main(int argc, char **argv, char **env)
 {
 	if (argc == 1)
-	prompt(argv, env);
+		prompt(argv, env);
 	return (0);
+}
+/**
+ * accept_input - accept input until the user hit enter
+ * @cmd: string input
+ * Return: string command
+ */
+char *accept_input(char *cmd)
+{
+	char *str;
+	int i = 0;
+	
+	str = malloc(8 * sizeof(char *));
+	if (str == NULL)
+		return (NULL);
+	while (cmd[i])
+	{
+		if (cmd[i] == '\n')
+			cmd[i] = 0;
+		str[i] = cmd[i];
+		i++;
+	}
+	return (str);
 }
 /**
  * prompt - display command prompt and accept commands from user recursivly
@@ -19,48 +41,45 @@ int main(int argc, char *argv[], char **env)
  * @env: environment variable
  * Return: nothing
 */
-void prompt(char **argv, char **env)
+void prompt(char *argv[], char **env)
 {
-	char *command = NULL;	/*command entered from the user*/
-	int c, pStatus;	/*c: character counter, pStatus: child process status*/
+	char **string;	/*command entered from the user*/
+	int c = 0;	/*c: character counter, pStatus: child process status*/
 	size_t n = 0;	/*n: address of character*/
 	ssize_t num_char;	/*num_char: number of character entered and read*/
-	char *arg[50];	/*arg: argument value passed*/
-	pid_t cldId;	/*cldId: child process*/
+	char *arg, *ptr;	/*arg: argument value passed*/
 
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))	/*if end of file*/
-			printf("#cisfun$ ");
-		num_char = getline(&command, &n, stdin);	/*read all line*/
+			write(STDOUT_FILENO, "#cisfun$ ", 10);
+		ptr = malloc(sizeof(char *) * n);
+		if (ptr == NULL)
+		{
+			free(string);
+			exit(1);
+		}
+		num_char = getline(&ptr, &n, stdin);	/*read all line*/
 		if (num_char < 0)
 		{
-			free(command);
-			exit(127);
+			free(string);
+			exit(1);
 		}
-		c = 0;
-		while (command[c])
+		if (*ptr != '\n')
 		{
-			if (command[c] == '\n')	/*check enter key*/
-				command[c] = 0;
-			c++;
-		}
-		c = 0;
-		arg[c] = strtok(command, " ");
-		while (arg[c])
-			arg[++c] = strtok(NULL, " ");
-		cldId = fork();	/*create child process, return -1 if it is failed*/
-		if (cldId < 0)
-		{
-			free(command);
-			exit(127);
-		}
-		else if (cldId == 0)
-		{
-			if (execve(arg[0], arg, env) < 0)	/*execute the command*/
+			string = _strtok(ptr);
+			if (strcmp("exit", string[0]) == 0)
+				break;
+			c = 0;
+			arg = check_cmd(string[0]);
+			if (arg != NULL)
+				string[0] = arg;
+			c = check_PATH(string[0]);
+			if (c == 1)
+				execute(string, env);
+			if (arg == NULL && c == 0)
 				printf("%s: No such file or directory\n", argv[0]);
 		}
-		else
-			wait(&pStatus);	/*wait the child process*/
 	}
+	free(arg);
 }

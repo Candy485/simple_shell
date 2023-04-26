@@ -9,6 +9,12 @@
 #include <sys/wait.h> /* for wait */
 #include <sys/stat.h>
 #include <string.h>
+#include <dirent.h>
 
+char *accept_input(char *cmd);
 void prompt(char **argv, char **env);
+char **_strtok(char *cmd);
+char *check_cmd(char *cmd);
+int check_PATH(char *cmd);
+void execute(char **cmd, char *env[]);
 #endif
